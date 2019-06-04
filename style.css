@@ -3,3 +3,12 @@
   padding: 0;
   margin: 0;
 }
+
+.container, .container2 {
+  width: 40%;
+  margin: 15px auto;
+  text-align: center;
+}
+.container2{
+  margin-top: 30px;
+}
