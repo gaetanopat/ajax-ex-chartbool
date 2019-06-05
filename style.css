@@ -3,12 +3,43 @@
   padding: 0;
   margin: 0;
 }
-
+/* per il container delle select */
+.select_container{
+  text-align: center;
+  height: 70px;
+  margin-top: 15px;
+  margin-bottom: 40px;
+}
+/* per l'h3, 'Aggiungi vendita' */
+h3{
+  margin-bottom: 10px;
+}
+/* per le select */
+select, input{
+  height: 25px;
+}
+select.mesi{
+  margin: 0 10px;
+}
+input{
+  margin-right: 10px;
+}
+/* per il link 'Aggiungi vendita' */
+a.aggiungi_vendita{
+  text-decoration: none;
+  color: white;
+  line-height: 25px;
+  padding: 4.5px 10px;
+  background-color: black;
+  border-radius: 15px;
+}
+/* per i container dei grafici */
 .container, .container2 {
-  width: 40%;
+  width: 35%;
   margin: 15px auto;
   text-align: center;
 }
+/* per il container del secondo grafico */
 .container2{
   margin-top: 30px;
 }

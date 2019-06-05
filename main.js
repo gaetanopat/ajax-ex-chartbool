@@ -1,5 +1,56 @@
 $(document).ready(function(){
   var url_base = 'http://157.230.17.132:4011/sales';
+
+  // richiamo la funzione prendiDati (metodo get)
+  prendiDati(url_base);
+
+  // quando clicco su 'Aggiungi vendita'
+  $('a.aggiungi_vendita').click(function(){
+    // se l'utente ha inserito qualcosa nell'input text
+    if ($('input').val().length > 0) {
+      // prendo il venditore che ha selezionato l'utente
+      var venditore_selezionato = $('select.venditori').val();
+      // prendo il mese che ha selezionato l'utente
+      var mese_selezionato = $('select.mesi').val();
+      // prendo il valore dell'input text
+      var valore_vendita = $('input').val();
+      // trasformo il mese in una data completa, es. 01/02/2017
+      var data_del_mese_selezionato = '01/' + moment(mese_selezionato, 'MMMM').format('MM') + '/2017';
+
+      $.ajax({
+        url: url_base,
+        method: 'post',
+        data: JSON.stringify({
+          salesman: venditore_selezionato,
+          amount: parseInt(valore_vendita),
+          date: data_del_mese_selezionato
+        }),
+        contentType: 'application/json',
+        success: function(risultati){
+          // richiamo la funzione prendiDati
+          prendiDati(url_base);
+        },
+        error: function(){
+          alert('errore');
+        }
+      });
+
+      // resetto la select dei venditori
+      $('select.venditori option:first-child').attr('selected', true);
+      // resetto la select dei mesi
+      $('select.mesi option:first-child').attr('selected', true);
+      // azzero la input text
+      $('input').val('');
+    } else {
+      alert('Inserisci valore');
+    }
+
+  });
+
+
+});
+
+function prendiDati(url_base){
   var labels_mesi = [];
   var data_soldi = [];
   var labels = [];
@@ -24,48 +75,26 @@ $(document).ready(function(){
     url: url_base,
     method: 'get',
     success: function(data){
-      // console.log(data);
+      console.log(data);
+      // svuoto la select dei mesi
+      $('select.mesi').empty();
+      // prima opzione della select
+      $('select.mesi').append('<option value="">Seleziona mese dell\'anno</option>')
+
+      // per l'andamento dell'azienda nell'anno 2017
       for (var i = 0; i < data.length; i++) {
-        // console.log(data[i].date);
         var mese = moment(data[i].date, 'DD/MM/YYYY').format('M');
-        // console.log(mese);
-        for (var val in mesi) {
-          if (val == mese) {
-            mesi[val] += data[i].amount;
-          };
-        };
+        // inserisco il totale di ogni mese come valore
+        mesi[mese] += data[i].amount;
       };
       // per il primo Chart
-      var firstChart = $('#myfirstChart');
-      var myfirstChart = new Chart(firstChart, {
-        type: 'line',
-        data: {
-          labels: prendiMesi(mesi, labels_mesi),
-          datasets: [{
-            label: '# of Votes',
-            data: prendiValori(mesi, data_soldi),
-            backgroundColor: 'blue',
-            borderColor: 'blue',
-            fill: false
-          }]
-        },
-    });
-    },
-    error: function(){
-      alert('errore');
-    }
-  });
+      firstChart(mesi, labels_mesi, data_soldi);
 
 
-
-  $.ajax({
-    url: url_base,
-    method: 'get',
-    success: function(data){
+      // per la percentuale vendite effettuate dai venditori
       // mi preparo i dati per il grafico
       for (var i = 0; i < data.length; i++) {
-        // recupero il continente
-        console.log(data[i].salesman);
+        // recupero il venditore
         var venditore = data[i].salesman;
         // controllo se non ho ancora inserito questo venditori
         // nell'array di tutti i venditori
@@ -74,11 +103,18 @@ $(document).ready(function(){
         }
       }
 
+      // svuoto la select dei venditori
+      $('select.venditori').empty();
+      // prima opzione della select
+      $('select.venditori').append('<option value="">Seleziona venditore</option>')
       // ciclo sui venditori che mi sono già estratto
       for (var i = 0; i < labels.length; i++) {
         var venditore_corrente = labels[i];
         // preparo una variabile per sommare le vendite di questo venditore
         var somma_vendite_singolo_venditore = 0;
+        // ciclando l'array dei venditori appendo alla select i vari venditori
+        $('select.venditori').append('<option>' + labels[i] + '</option>');
+
         // ciclo tutti i dati iniziali
         for (var j = 0; j < data.length; j++) {
           var vendita_corrente = data[j];
@@ -94,42 +130,13 @@ $(document).ready(function(){
       }
 
       percentualeVenditore(array_vendite, fatturato_totale, percentuale);
-
-      // per il secondo Chart
-      var secondChart = $('#mysecondChart');
-      var mysecondChart = new Chart(secondChart, {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-              label: '# of Votes',
-              data: percentuale,
-              backgroundColor: ['red', 'blue', 'yellow', 'green'],
-              borderWidth: 1
-          }]
-        },
-    });
+      // // per il secondo Chart
+      secondChart(labels, percentuale);
     },
     error: function(){
       alert('errore');
     }
   });
-});
-
-// per i mesi che mi serviranno per l'asse X del grafico
-function prendiMesi(mesi, labels_mesi){
-  for(var val in mesi){
-    labels_mesi.push(moment(val, 'M').format('MMMM'));
-  }
-  return(labels_mesi);
-};
-
-// per i valori che mi serviranno per l'asse Y del grafico
-function prendiValori(mesi, data_soldi){
-  for(var val in mesi){
-    data_soldi.push(mesi[val]);
-  }
-  return(data_soldi);
 }
 
 // funzione per la percentuale delle vendite dei singoli venditori
@@ -144,4 +151,60 @@ function percentualeVenditore(array_vendite, fatturato_totale, percentuale){
     // pusho in un array percentuale le percentuali di ciascun venditore
     percentuale.push((((array_vendite[i]/fatturato_totale)*100).toFixed(2)));
   }
+}
+
+// per il primo chart
+function firstChart(mesi, labels_mesi, data_soldi){
+  var firstChart = $('#myfirstChart');
+  var myfirstChart = new Chart(firstChart, {
+    type: 'line',
+    data: {
+      labels: prendiMesi(mesi, labels_mesi),
+      datasets: [{
+        label: '# of Votes',
+        data: prendiValori(mesi, data_soldi),
+        backgroundColor: 'blue',
+        borderColor: 'blue',
+        fill: false
+      }]
+    },
+  });
+}
+
+// per i mesi che mi serviranno per l'asse X del grafico
+function prendiMesi(mesi, labels_mesi){
+  for(var val in mesi){
+    labels_mesi.push(moment(val, 'M').format('MMMM'));
+  }
+
+  for (var i = 0; i < labels_mesi.length; i++) {
+    // appendo alla select dei mesi ogni mese
+    $('select.mesi').append('<option>' + labels_mesi[i] + '</option>');
+  }
+  return(labels_mesi);
+};
+
+// per i valori che mi serviranno per l'asse Y del grafico
+function prendiValori(mesi, data_soldi){
+  for(var val in mesi){
+    data_soldi.push(mesi[val]);
+  }
+  return(data_soldi);
+}
+
+// per il secondo chart
+function secondChart(labels, percentuale){
+  var secondChart = $('#mysecondChart');
+  var mysecondChart = new Chart(secondChart, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+          label: '# of Votes',
+          data: percentuale,
+          backgroundColor: ['red', 'blue', 'yellow', 'green'],
+          borderWidth: 1
+      }]
+    },
+  });
 }
