@@ -6,17 +6,17 @@ $(document).ready(function(){
 
   // quando clicco su 'Aggiungi vendita'
   $('a.aggiungi_vendita').click(function(){
-    // se l'utente ha inserito qualcosa nell'input text
-    if ($('input').val().length > 0) {
-      // prendo il venditore che ha selezionato l'utente
-      var venditore_selezionato = $('select.venditori').val();
-      // prendo il mese che ha selezionato l'utente
-      var mese_selezionato = $('select.mesi').val();
-      // prendo il valore dell'input text
-      var valore_vendita = $('input').val();
-      // trasformo il mese in una data completa, es. 01/02/2017
-      var data_del_mese_selezionato = '01/' + moment(mese_selezionato, 'MMMM').format('MM') + '/2017';
 
+    // prendo il venditore che ha selezionato l'utente
+    var venditore_selezionato = $('select.venditori').val();
+    // prendo il mese che ha selezionato l'utente
+    var mese_selezionato = $('select.mesi').val();
+    // prendo il valore dell'input text
+    var valore_vendita = $('input').val();
+    // trasformo il mese in una data completa, es. 01/02/2017
+    var data_del_mese_selezionato = '01/' + moment(mese_selezionato, 'MMMM').format('MM') + '/2017';
+    // per controllare che l'utente abbia scritto qualcosa nell'input text, che sia un numero e sia > 0, che la lunghezza del value selezionato nelle select è != 0
+    if (valore_vendita.length > 0 && valore_vendita > 0 && !isNaN(valore_vendita) && venditore_selezionato.length != 0 && mese_selezionato.length != 0) {
       $.ajax({
         url: url_base,
         method: 'post',
@@ -113,7 +113,7 @@ function prendiDati(url_base){
         // preparo una variabile per sommare le vendite di questo venditore
         var somma_vendite_singolo_venditore = 0;
         // ciclando l'array dei venditori appendo alla select i vari venditori
-        $('select.venditori').append('<option>' + labels[i] + '</option>');
+        $('select.venditori').append('<option value="' + labels[i] + '">' + labels[i] + '</option>');
 
         // ciclo tutti i dati iniziali
         for (var j = 0; j < data.length; j++) {
@@ -179,7 +179,7 @@ function prendiMesi(mesi, labels_mesi){
 
   for (var i = 0; i < labels_mesi.length; i++) {
     // appendo alla select dei mesi ogni mese
-    $('select.mesi').append('<option>' + labels_mesi[i] + '</option>');
+    $('select.mesi').append('<option value="' + labels_mesi[i] + '">' + labels_mesi[i] + '</option>');
   }
   return(labels_mesi);
 };
