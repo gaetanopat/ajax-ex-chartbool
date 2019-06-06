@@ -18,6 +18,7 @@ h3{
 select, input{
   height: 25px;
 }
+/* per la select dei mesi */
 select.mesi{
   margin: 0 10px;
 }

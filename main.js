@@ -57,6 +57,7 @@ function prendiDati(url_base){
   var fatturato_totale = 0;
   var percentuale = [];
   var array_vendite = [];
+  var quarters = [0, 0, 0, 0];
   var mesi = {
       1: 0,
       2: 0,
@@ -87,9 +88,9 @@ function prendiDati(url_base){
         // inserisco il totale di ogni mese come valore
         mesi[mese] += data[i].amount;
       };
+
       // per il primo Chart
       firstChart(mesi, labels_mesi, data_soldi);
-
 
       // per la percentuale vendite effettuate dai venditori
       // mi preparo i dati per il grafico
@@ -130,8 +131,13 @@ function prendiDati(url_base){
       }
 
       percentualeVenditore(array_vendite, fatturato_totale, percentuale);
-      // // per il secondo Chart
+      // per il secondo Chart
       secondChart(labels, percentuale);
+
+      // calcolo le somme dei quarters
+      calcolaQuarters(quarters, mesi);
+      // per il terzo Chart
+      thirdChart(quarters)
     },
     error: function(){
       alert('errore');
@@ -161,7 +167,7 @@ function firstChart(mesi, labels_mesi, data_soldi){
     data: {
       labels: prendiMesi(mesi, labels_mesi),
       datasets: [{
-        label: '# of Votes',
+        label: '# of Sales in a month',
         data: prendiValori(mesi, data_soldi),
         backgroundColor: 'blue',
         borderColor: 'blue',
@@ -203,6 +209,39 @@ function secondChart(labels, percentuale){
           label: '# of Votes',
           data: percentuale,
           backgroundColor: ['red', 'blue', 'yellow', 'green'],
+          borderWidth: 1
+      }]
+    },
+  });
+}
+
+// per calcolare i vari Quarters
+function calcolaQuarters(quarters, mesi){
+  for (var i = 1; i < 4; i++) {
+    quarters[0] += mesi[i];
+  }
+  for (var i = 4; i < 7; i++) {
+    quarters[1] += mesi[i];
+  }
+  for (var i = 7; i < 10; i++) {
+    quarters[2] += mesi[i];
+  }
+  for (var i = 10; i < 13; i++) {
+    quarters[3] += mesi[i];
+  }
+}
+
+// per il terzo grafico
+function thirdChart(quarters){
+  var thirdChart = $('#mythirdChart');
+  var mythirdChart = new Chart(thirdChart, {
+    type: 'bar',
+    data: {
+      labels: ['Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4'],
+      datasets: [{
+          label: 'Quarters',
+          data: quarters,
+          backgroundColor: '#6fa1f2',
           borderWidth: 1
       }]
     },
